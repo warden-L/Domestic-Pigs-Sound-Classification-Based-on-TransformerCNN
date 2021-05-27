@@ -86,27 +86,16 @@ class model(nn.Module):
         self.softmax_out = nn.Softmax(dim=1)
 
     def forward(self, x):
-
         conv2d_embedding2 = self.conv2Dblock2(x)
-
         conv2d_embedding2 = torch.flatten(conv2d_embedding2, start_dim=1)
-
         x_maxpool = self.transformer_maxpool(x)
-
         x_maxpool_reduced = torch.squeeze(x_maxpool, 1)
-
         x = x_maxpool_reduced.permute(2, 0, 1)
-
         transformer_output = self.transformer_encoder(x)
-
         transformer_embedding = torch.mean(transformer_output, dim=0)
-
         complete_embedding = torch.cat([conv2d_embedding2, transformer_embedding], dim=1)
-
         output_logits = self.fc1_linear(complete_embedding)
-
         output_softmax = self.softmax_out(output_logits)
-
         return output_logits, output_softmax
 
 file_name = 'MLMC'
