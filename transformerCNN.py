@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.nn.functional as F
-
+from sklearn.metrics import precision_score,f1_score
 warnings.filterwarnings("ignore")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -19,20 +19,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class model(nn.Module):
     def __init__(self, num_class):
         super().__init__()
-
         self.transformer_maxpool = nn.MaxPool2d(kernel_size=[1, 2], stride=[1, 2])
-
         transformer_layer = nn.TransformerEncoderLayer(
             d_model=145,
             nhead=5,
             dim_feedforward=512,
             dropout=0.5,
         )
-
         self.transformer_encoder = nn.TransformerEncoder(transformer_layer, num_layers=2)
-
         self.conv2Dblock2 = nn.Sequential(
-
             nn.Conv2d(
                 in_channels=1,
                 out_channels=16,
@@ -44,7 +39,6 @@ class model(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout(p=0.5),
-
             nn.Conv2d(
                 in_channels=16,
                 out_channels=32,
@@ -56,7 +50,6 @@ class model(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout(p=0.5),
-
             nn.Conv2d(
                 in_channels=32,
                 out_channels=64,
@@ -68,7 +61,6 @@ class model(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout(p=0.5),
-
             nn.Conv2d(
                 in_channels=64,
                 out_channels=128,
@@ -82,9 +74,7 @@ class model(nn.Module):
             nn.Dropout(p=0.5),
         )
         self.fc1_linear = nn.Linear(657, num_class)
-
         self.softmax_out = nn.Softmax(dim=1)
-
     def forward(self, x):
         conv2d_embedding2 = self.conv2Dblock2(x)
         conv2d_embedding2 = torch.flatten(conv2d_embedding2, start_dim=1)
@@ -205,9 +195,6 @@ print("per class acc:", per_class_accuracy(predicted.cpu().numpy(), labels.cpu()
       np.mean(per_class_accuracy(predicted.cpu().numpy(), labels.cpu().numpy())))
 f = int(100.0 * correct / total)
 torch.save(net, './model/' + str(f) + '_tf_cnn_model.pkl')
-
-
-from sklearn.metrics import precision_score,f1_score
 
 precision = precision_score(test_y_, predicted, average='weighted')
 recall = recall_score(test_y_, predicted, average='weighted')
